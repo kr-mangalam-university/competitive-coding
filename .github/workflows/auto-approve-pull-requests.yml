@@ -1,0 +1,32 @@
+name: Auto Approve
+
+on:
+  pull_request_target:
+    types: [opened, synchronize]
+
+jobs:
+  auto_approve:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Check if PR is under student-solutions/username
+        run: |
+          changed_files="$(git diff --name-only ${{ github.event.before }} ${{ github.sha }})"
+          is_valid_pr=0
+          for file in $changed_files; do
+            if [[ $file == "student-solutions/"* ]]; then
+              is_valid_pr=1
+              break
+            fi
+          done
+          if [ $is_valid_pr -eq 1 ]; then
+            echo "::set-output name=valid_pr::true"
+          else
+            echo "::set-output name=valid_pr::false"
+          fi
+        id: check_pr
+
+      - name: Auto-approve PR
+        if: steps.check_pr.outputs.valid_pr == 'true'
+        uses: hmarr/auto-approve-action@v4
