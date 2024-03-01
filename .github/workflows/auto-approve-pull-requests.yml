@@ -10,6 +10,8 @@ jobs:
     permissions:
       pull-requests: write
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
       - name: Check if PR is under student-solutions/username
         run: |
           changed_files="$(git diff --name-only ${{ github.event.before }} ${{ github.sha }})"
