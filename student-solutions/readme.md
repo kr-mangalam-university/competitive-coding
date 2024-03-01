@@ -48,4 +48,4 @@ git push origin main
 
 If you have any questions or need assistance, don't hesitate to reach out to the repository maintainers.
 
-Happy coding!
+Happy coding! 🚀
