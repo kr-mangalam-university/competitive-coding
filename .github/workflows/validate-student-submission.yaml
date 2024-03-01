@@ -1,0 +1,52 @@
+name: Pull Request Checker
+description: Automatically accept pull requests under student-solutions/username and decline others
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  check_pull_request:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up GitHub CLI
+        uses: actions/setup-gh@v2
+        with:
+          gh-version: 'latest'
+      
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      
+      - name: Check if PR is under student-solutions/username
+        run: |
+          changed_files="$(git diff --name-only ${{ github.event.before }} ${{ github.sha }})"
+          is_valid_pr=0
+          for file in $changed_files; do
+            if [[ $file == "student-solutions/"* ]]; then
+              is_valid_pr=1
+              break
+            fi
+          done
+          if [ $is_valid_pr -eq 1 ]; then
+            echo "::set-output name=valid_pr::true"
+          else
+            echo "::set-output name=valid_pr::false"
+          fi
+      
+      - name: Check if user is admin
+        id: check_admin
+        run: echo "::set-output name=is_admin::${{ github.actor }}" # Check if actor (user who triggered the workflow) is an admin
+      
+      - name: Extract branch name
+        run: echo "BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/})"
+        shell: bash
+      
+      - name: Validate pull request and process
+        if: steps.check_admin.outputs.is_admin == 'false'
+        run: |
+          if [ "${{ steps.check_pull_request.outputs.valid_pr }}" == "true" ]; then
+            gh pr merge $BRANCH_NAME --auto --squash --delete-branch
+          else
+            gh pr close $BRANCH_NAME --delete-branch --message "Sorry, this pull request does not contain changes under 'student-solutions/username'. Please submit your solutions in the appropriate directory."
+          fi
