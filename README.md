@@ -1,4 +1,4 @@
-# KR Mangalam University Competitive Coding Repository
+# KR Mangalam University Competitive Coding Repositor
 
 Welcome to the KR Mangalam University Competitive Coding Repository! This repository is dedicated to providing resources, practice problems, and solutions for students interested in competitive programming.
 
